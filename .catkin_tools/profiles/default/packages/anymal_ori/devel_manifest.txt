@@ -1,0 +1,4 @@
+anymal_ori
+/home/aims/Documents/cdt_challenge_ws/devel/.private/anymal_ori/lib/pkgconfig/anymal_ori.pc /home/aims/Documents/cdt_challenge_ws/devel/lib/pkgconfig/anymal_ori.pc
+/home/aims/Documents/cdt_challenge_ws/devel/.private/anymal_ori/share/anymal_ori/cmake/anymal_oriConfig.cmake /home/aims/Documents/cdt_challenge_ws/devel/share/anymal_ori/cmake/anymal_oriConfig.cmake
+/home/aims/Documents/cdt_challenge_ws/devel/.private/anymal_ori/share/anymal_ori/cmake/anymal_oriConfig-version.cmake /home/aims/Documents/cdt_challenge_ws/devel/share/anymal_ori/cmake/anymal_oriConfig-version.cmake

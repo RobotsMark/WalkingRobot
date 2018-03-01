@@ -10,7 +10,7 @@ from geometry_msgs.msg import PoseStamped
 from joy_manager_msgs.msg import AnyJoy
 
 global base_velocity_control_enabled
-base_velocity_control_enabled = False
+base_velocity_control_enabled = True
 
 def on_body_posture_goal(data):
     print "Received Body Plan message"
@@ -66,6 +66,8 @@ rospy.Subscriber("/stop_walking_cmd", Int16, on_stop_walking)
 # temporary trigger to start walking
 rospy.Subscriber("/footstep_plan_request", PoseStamped, on_committed_walking_plan)
 rospy.Subscriber("/goal", PoseStamped, on_committed_walking_plan)
-rospy.Subscriber("/path_follower/path_follower_cmd", Twist, on_base_velocity_command)
+# rospy.Subscriber("/path_follower/path_follower_cmd", Twist, on_base_velocity_command)
+rospy.Subscriber("/path_follower_cmd", Twist, on_base_velocity_command)
+
 
 rospy.spin()

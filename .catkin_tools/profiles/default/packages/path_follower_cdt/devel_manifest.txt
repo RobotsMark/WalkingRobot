@@ -1,0 +1,8 @@
+path_follower_cdt
+/home/aims/Documents/cdt_challenge_ws/devel/.private/path_follower_cdt/lib/libpath_follower_cdt.so /home/aims/Documents/cdt_challenge_ws/devel/lib/libpath_follower_cdt.so
+/home/aims/Documents/cdt_challenge_ws/devel/.private/path_follower_cdt/lib/path_follower_cdt/simple_heading_follower_node /home/aims/Documents/cdt_challenge_ws/devel/lib/path_follower_cdt/simple_heading_follower_node
+/home/aims/Documents/cdt_challenge_ws/devel/.private/path_follower_cdt/lib/path_follower_cdt/path_follower_cdt_node /home/aims/Documents/cdt_challenge_ws/devel/lib/path_follower_cdt/path_follower_cdt_node
+/home/aims/Documents/cdt_challenge_ws/devel/.private/path_follower_cdt/lib/python2.7/dist-packages/high_level_actions/__init__.py /home/aims/Documents/cdt_challenge_ws/devel/lib/python2.7/dist-packages/high_level_actions/__init__.py
+/home/aims/Documents/cdt_challenge_ws/devel/.private/path_follower_cdt/lib/pkgconfig/path_follower_cdt.pc /home/aims/Documents/cdt_challenge_ws/devel/lib/pkgconfig/path_follower_cdt.pc
+/home/aims/Documents/cdt_challenge_ws/devel/.private/path_follower_cdt/share/path_follower_cdt/cmake/path_follower_cdtConfig-version.cmake /home/aims/Documents/cdt_challenge_ws/devel/share/path_follower_cdt/cmake/path_follower_cdtConfig-version.cmake
+/home/aims/Documents/cdt_challenge_ws/devel/.private/path_follower_cdt/share/path_follower_cdt/cmake/path_follower_cdtConfig.cmake /home/aims/Documents/cdt_challenge_ws/devel/share/path_follower_cdt/cmake/path_follower_cdtConfig.cmake

@@ -11,6 +11,8 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Int16.h>
 
+#include <joy_manager_msgs/AnyJoy.h>
+
 #include <eigen_conversions/eigen_msg.h>
 
 #include <path_follower_cdt/path_follower_cdt.hpp>
@@ -42,8 +44,8 @@ class Pass{
     void newFootstepPlanRequestHandler(const geometry_msgs::PoseStampedConstPtr& msg);
 
     ros::Publisher pathFollowerPub_,stopWalkingPub_;
+//velocityJoyPub_;
     ros::Publisher visualizeCurrentGoalPub_, visualizeRemainingGoalsPub_;
-
 };
 
 
@@ -60,10 +62,11 @@ Pass::Pass(ros::NodeHandle node_, const CommandLineConfig& cl_cfg_):
   pathFollowerPub_ = node_.advertise<geometry_msgs::Twist>("/path_follower_cmd", 10);
   stopWalkingPub_ = node_.advertise<std_msgs::Int16>("/stop_walking_cmd",10);
 
+  //velocityJoyPub_ = node_.advertise<joy_manager_msgs::AnyJoy>("/anyjoy/onboard", 10);
+
   // diagnostics:
   visualizeCurrentGoalPub_ = node_.advertise<geometry_msgs::PoseStamped>("/path_follower_current_goal", 10);
   visualizeRemainingGoalsPub_ = node_.advertise<geometry_msgs::PoseArray>("/path_follower_remaining_goals", 10);
-
 
   pathFollower_ = new PathFollower();
 
@@ -83,6 +86,11 @@ void Pass::newDrivingGoalRvizHandler(const geometry_msgs::PoseStampedConstPtr& m
   Eigen::Isometry3d msg_pose = Eigen::Isometry3d::Identity();
   tf::poseMsgToEigen(msg->pose, msg_pose);
   pathFollower_->setGoalAndEnable( msg_pose);
+  //Eigen::Quaterniond q(msg_pose.rotation());
+  
+  //double roll, pitch;
+  //quat_to_euler(q, roll, pitch, des_yaw_);
+  //ROS_INFO("new yaw: %f", des_yaw_);
 }
 
 void Pass::newFootstepPlanRequestHandler(const geometry_msgs::PoseStampedConstPtr& msg){
@@ -99,20 +107,34 @@ void Pass::poseHandler(const geometry_msgs::PoseWithCovarianceStampedConstPtr& m
   int64_t msg_utime = (int64_t)floor(msg->header.stamp.toNSec() / 1000); 
   Eigen::Isometry3d msg_pose = Eigen::Isometry3d::Identity();
   tf::poseMsgToEigen(msg->pose.pose, msg_pose);
-
   
 
-  std::cout << "DEVELOP PATH FOLLOWER HERE\n";
+  // std::cout << "DEVELOP PATH FOLLOWER HERE\n";
   // send inputs to the provided class
   FOLLOWER_OUTPUT output_mode = pathFollower_->computeControlCommand( msg_pose, msg_utime );
-
-
-
 
   // get the output from the provided class and send to the path follower and viewer
   Eigen::Vector3d output_linear_velocity;
   Eigen::Vector3d output_angular_velocity;
   pathFollower_->getOutputVelocity(output_linear_velocity, output_angular_velocity);
+
+  // transmit - as a joy pad message:
+  //joy_manager_msgs::AnyJoy cmd_joy;
+  //cmd_joy.header.stamp = msg->header.stamp;
+  // 0 : lateral in range -1:1
+  // 1 : for/bk in range -1:1
+  // 2 : unused part of right joiy
+  // 3 : turning -1:1
+  //std::vector<float> axes(4);
+  //axes[0]=output_linear_velocity(1);
+  //axes[1]=output_linear_velocity(0);
+  //axes[2]=0;
+  //axes[3]=output_angular_velocity(2);
+  //cmd_joy.joy.axes = axes;
+  //velocityJoyPub_.publish(cmd_joy);
+  
+  
+  
 
   geometry_msgs::Twist cmd;
   cmd.linear.x = output_linear_velocity(0);
@@ -122,7 +144,8 @@ void Pass::poseHandler(const geometry_msgs::PoseWithCovarianceStampedConstPtr& m
   cmd.angular.y = output_angular_velocity(1);
   cmd.angular.z = output_angular_velocity(2);
   pathFollowerPub_.publish(cmd);
-
+  
+  //ROS_INFO_THROTTLE(0.5, "vx: %f, vy: %f, vz: %f, vtheta: %f",cmd.linear.x, cmd.linear.y, cmd.linear.z ,cmd.angular.z); 
 
   // Visualize the current goal
   geometry_msgs::PoseStamped m;

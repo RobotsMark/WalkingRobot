@@ -1,0 +1,4 @@
+gazebo_worlds_ori
+/home/aims/Documents/cdt_challenge_ws/devel/.private/gazebo_worlds_ori/lib/pkgconfig/gazebo_worlds_ori.pc /home/aims/Documents/cdt_challenge_ws/devel/lib/pkgconfig/gazebo_worlds_ori.pc
+/home/aims/Documents/cdt_challenge_ws/devel/.private/gazebo_worlds_ori/share/gazebo_worlds_ori/cmake/gazebo_worlds_oriConfig-version.cmake /home/aims/Documents/cdt_challenge_ws/devel/share/gazebo_worlds_ori/cmake/gazebo_worlds_oriConfig-version.cmake
+/home/aims/Documents/cdt_challenge_ws/devel/.private/gazebo_worlds_ori/share/gazebo_worlds_ori/cmake/gazebo_worlds_oriConfig.cmake /home/aims/Documents/cdt_challenge_ws/devel/share/gazebo_worlds_ori/cmake/gazebo_worlds_oriConfig.cmake

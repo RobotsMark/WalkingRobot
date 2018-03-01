@@ -148,6 +148,34 @@ void NavigationDemo::callback(const grid_map_msgs::GridMap& message)
 
 }
 
+double NavigationDemo::lookUpValue(double x, double y, grid_map::GridMap& outputMap)
+{
+  double z = 0.0;
+  double value;
+
+  Eigen::Vector3d pt_original(x, y, z);
+  Position pt = Position(  pt_original.head(2) );
+
+  if ( outputMap.isInside(pt) ){
+    Index pt_index;
+    outputMap.getIndex( pt, pt_index );
+    Position pt_cell;
+    outputMap.getPosition(pt_index, pt_cell);
+    return value = outputMap.at("carrot_layer", pt_index);
+  }
+  else {
+    return value = 0.0;
+  }
+
+}
+
+double NavigationDemo::lookUpValueIndex(Index pt_index, grid_map::GridMap& outputMap)
+{
+  double value;
+
+  return value = outputMap.at("traversability", pt_index);
+
+}
 bool NavigationDemo::planCarrot(const grid_map_msgs::GridMap& message,
   Eigen::Isometry3d pose_robot, Position pos_goal,
   Eigen::Isometry3d& pose_chosen_carrot)
@@ -197,6 +225,110 @@ bool NavigationDemo::planCarrot(const grid_map_msgs::GridMap& message,
 
 
   ////// Put your code here ////////////////////////////////////
+  //add a new layer full of zeros
+  //outputMap.add("carrots", Matrix::Zero(outputMap.getSize()(0), outputMap.getSize()(1)));
+  //outputMap.add("carrot_layer", outputMap.get("traversability") );
+
+  //copy data to openCV and do an open cv operation e.g. dilation, blurring, erosion. Then copy back to GridMap
+  cv::Mat originalImage, dilatedImage;
+  GridMapCvConverter::toImage<unsigned short, 1>(outputMap, "traversability", CV_16UC1, 0.0, 1, originalImage);
+  cv::imwrite( "originalImage.png", originalImage );
+  cv::Mat strEl = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5,5));
+  cv::erode(originalImage, dilatedImage, strEl);
+  // add your OpenCV operation here
+  GridMapCvConverter::addLayerFromImage<unsigned short, 1>(dilatedImage, "carrot_layer", outputMap, 0.0, 1);
+
+  /*
+  outputMap.add("carrot_layer", outputMap.get("traversability") );
+  grid_map::Matrix& dist_data = outputMap["carrot_layer"];
+  int numUpd=0;
+  int numNaN=0;
+  Index new_index;
+  for (GridMapIterator iterator(outputMap); !iterator.isPastEnd(); ++iterator) {
+    const Index index(*iterator);
+    double minValue=1.0;
+    for (int i=-1; i<=1; i++) {
+      new_index(0) = index(0) + i;
+      for (int j=-1; j<=1; j++) {
+        if (j < 1 && j > -1){
+          if (i < 1 && i > -1){
+            continue;
+          }
+        }
+        new_index(1) = index(1) + j;
+        double value = lookUpValueIndex(new_index, outputMap);
+        if (value < 2) {
+          //std::cout << value << " Value of grid is:\n";
+        }
+        if (value < minValue) {
+          minValue = value;
+          numUpd++;
+          //std::cout << " UPDATE!\n";
+        }
+      }
+    }
+    //outputMap.at("carrot_layer", index) = maxValue;
+    std::cout << minValue << " Minimum value\n";
+    dist_data(index(0), index(1)) = minValue;
+  }
+  std::cout << numUpd << " numUpd:\n";
+  */
+
+
+
+
+
+
+  double threshold = 0.5;
+  double optimal_distance = 50;
+  double best_x;
+  double best_y; 
+  Position potential_pose = pos_robot;
+  for (int i=-1; i <= 1; i++) {
+    potential_pose[0] = pos_robot[0] + i;
+    for (int j=-1; j <= 1; j++){
+      if (j < 1 && j > -1) {
+        if (i < 1 && i > -1) {
+          continue;
+        }
+      }
+      potential_pose[1] = pos_robot[1] + j;
+/*
+      double maxValue=0.0;
+      for (int k=-10; k<=10; k++) {
+        for (int m=-10; m<=10; m++) {
+          double value = lookUpValue(potential_pose[0]+k/100, potential_pose[1]+m/100, outputMap);
+          if (value > maxValue) {
+            maxValue = value;
+          }
+        }
+      }
+*/
+      if(lookUpValue(potential_pose[0], potential_pose[1], outputMap)>threshold){
+      //if(maxValue<threshold){
+        std::cout << lookUpValue(potential_pose[0], potential_pose[1], outputMap) << "lookupvalue\n";
+	if((potential_pose - pos_goal).norm() < optimal_distance){
+          best_x = potential_pose[0];
+          best_y = potential_pose[1];
+          optimal_distance = (potential_pose - pos_goal).norm();
+        }
+      }
+    }
+  }
+        std::cout << best_x << "x location\n";
+        std::cout << best_y << "y location\n";
+  
+  Eigen::Vector4d carrot_relative_pose = pose_robot.matrix().inverse()*Eigen::Vector4d(best_x, best_y, 0, 1) ;
+  double carrot_relative_theta = atan2(carrot_relative_pose(1),carrot_relative_pose(0));
+
+  Eigen::Isometry3d pose_chosen_carrot_relative = Eigen::Isometry3d::Identity();
+  pose_chosen_carrot_relative.translation() = Eigen::Vector3d( carrot_relative_pose(0),carrot_relative_pose(1),0);
+  Eigen::Quaterniond motion_R = Eigen::AngleAxisd(carrot_relative_theta, Eigen::Vector3d::UnitZ()) // yaw
+        * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitY()) // pitch
+        * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()); // roll
+
+  pose_chosen_carrot_relative.rotate( motion_R );
+  pose_chosen_carrot = pose_robot * pose_chosen_carrot_relative;
 
 
 
@@ -204,9 +336,23 @@ bool NavigationDemo::planCarrot(const grid_map_msgs::GridMap& message,
 
 
 
-
-
-
+  //String[] layers = ["traversability", "slope", "roughness" ];
+ /*
+  double minvalue=10000;
+  double maxvalue=-10000;
+  for (GridMapIterator iterator(outputMap); !iterator.isPastEnd(); ++iterator) {
+    const Index index(*iterator);
+    double value = lookUpValue(index(0), index(1), outputMap);
+    if(value<minvalue){
+      minvalue=value;
+    }
+    if(value>maxvalue){
+      maxvalue=value;
+    }
+  }
+  std::cout << minvalue << "minimum\n";
+  std::cout << maxvalue << "maximum\n";
+ */
 
 
 
@@ -222,12 +368,15 @@ bool NavigationDemo::planCarrot(const grid_map_msgs::GridMap& message,
 
   std::cout << "finish - carrot planner\n\n";
   
-
+ 
+  /*
   // REMOVE THIS WHEN YOUR ARE DEVELOPING ----------------
   // create a fake carrot - replace with a good carrot
-  std::cout << "REPLACE FAKE CARROT!\n";
+  std::cout << "test - REPLACE FAKE CARROT!\n";
   pose_chosen_carrot.translation() = Eigen::Vector3d(1.0,0,0);
   // REMOVE THIS -----------------------------------------
+  */
+  
 
   return true;
 }

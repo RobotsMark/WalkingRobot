@@ -56,6 +56,9 @@ class NavigationDemo
    */
   void callback(const grid_map_msgs::GridMap& message);
 
+  double lookUpValue(double x, double y, grid_map::GridMap& outputMap);
+
+  double lookUpValueIndex(grid_map::Index pt_index, grid_map::GridMap& outputMap);
 
   // true - planning is good. send carrot.
   // false - planning isn't working or its disabled. don't send it
