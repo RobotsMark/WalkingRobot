@@ -212,6 +212,7 @@ bool NavigationDemo::planCarrot(const grid_map_msgs::GridMap& message,
   }
 
 
+
   // Convert message to map.
   GridMap inputMap;
   GridMapRosConverter::fromMessage(message, inputMap);
